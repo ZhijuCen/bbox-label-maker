@@ -1,0 +1,324 @@
+{
+  "categories": [
+    {
+      "name": "person",
+      "color": "rgb(217, 86, 38)"
+    },
+    {
+      "name": "bicycle",
+      "color": "rgb(217, 97, 38)"
+    },
+    {
+      "name": "car",
+      "color": "rgb(217, 109, 38)"
+    },
+    {
+      "name": "motorcycle",
+      "color": "rgb(217, 120, 38)"
+    },
+    {
+      "name": "airplane",
+      "color": "rgb(217, 132, 38)"
+    },
+    {
+      "name": "bus",
+      "color": "rgb(217, 143, 38)"
+    },
+    {
+      "name": "train",
+      "color": "rgb(217, 155, 38)"
+    },
+    {
+      "name": "truck",
+      "color": "rgb(217, 166, 38)"
+    },
+    {
+      "name": "boat",
+      "color": "rgb(217, 177, 38)"
+    },
+    {
+      "name": "traffic light",
+      "color": "rgb(217, 189, 38)"
+    },
+    {
+      "name": "fire hydrant",
+      "color": "rgb(217, 200, 38)"
+    },
+    {
+      "name": "stop sign",
+      "color": "rgb(217, 212, 38)"
+    },
+    {
+      "name": "parking meter",
+      "color": "rgb(210, 217, 38)"
+    },
+    {
+      "name": "bench",
+      "color": "rgb(199, 217, 38)"
+    },
+    {
+      "name": "bird",
+      "color": "rgb(187, 217, 38)"
+    },
+    {
+      "name": "cat",
+      "color": "rgb(176, 217, 38)"
+    },
+    {
+      "name": "dog",
+      "color": "rgb(164, 217, 38)"
+    },
+    {
+      "name": "horse",
+      "color": "rgb(153, 217, 38)"
+    },
+    {
+      "name": "sheep",
+      "color": "rgb(142, 217, 38)"
+    },
+    {
+      "name": "cow",
+      "color": "rgb(130, 217, 38)"
+    },
+    {
+      "name": "elephant",
+      "color": "rgb(119, 217, 38)"
+    },
+    {
+      "name": "bear",
+      "color": "rgb(107, 217, 38)"
+    },
+    {
+      "name": "zebra",
+      "color": "rgb(96, 217, 38)"
+    },
+    {
+      "name": "giraffe",
+      "color": "rgb(84, 217, 38)"
+    },
+    {
+      "name": "backpack",
+      "color": "rgb(73, 217, 38)"
+    },
+    {
+      "name": "umbrella",
+      "color": "rgb(61, 217, 38)"
+    },
+    {
+      "name": "handbag",
+      "color": "rgb(50, 217, 38)"
+    },
+    {
+      "name": "tie",
+      "color": "rgb(39, 217, 38)"
+    },
+    {
+      "name": "suitcase",
+      "color": "rgb(38, 217, 49)"
+    },
+    {
+      "name": "frisbee",
+      "color": "rgb(38, 217, 61)"
+    },
+    {
+      "name": "skis",
+      "color": "rgb(38, 217, 72)"
+    },
+    {
+      "name": "snowboard",
+      "color": "rgb(38, 217, 84)"
+    },
+    {
+      "name": "sports ball",
+      "color": "rgb(38, 217, 95)"
+    },
+    {
+      "name": "kite",
+      "color": "rgb(38, 217, 107)"
+    },
+    {
+      "name": "baseball bat",
+      "color": "rgb(38, 217, 118)"
+    },
+    {
+      "name": "baseball glove",
+      "color": "rgb(38, 217, 130)"
+    },
+    {
+      "name": "skateboard",
+      "color": "rgb(38, 217, 141)"
+    },
+    {
+      "name": "surfboard",
+      "color": "rgb(38, 217, 152)"
+    },
+    {
+      "name": "tennis racket",
+      "color": "rgb(38, 217, 164)"
+    },
+    {
+      "name": "bottle",
+      "color": "rgb(38, 217, 175)"
+    },
+    {
+      "name": "wine glass",
+      "color": "rgb(38, 217, 187)"
+    },
+    {
+      "name": "cup",
+      "color": "rgb(38, 217, 198)"
+    },
+    {
+      "name": "fork",
+      "color": "rgb(38, 217, 210)"
+    },
+    {
+      "name": "knife",
+      "color": "rgb(38, 212, 217)"
+    },
+    {
+      "name": "spoon",
+      "color": "rgb(38, 201, 217)"
+    },
+    {
+      "name": "bowl",
+      "color": "rgb(38, 189, 217)"
+    },
+    {
+      "name": "banana",
+      "color": "rgb(38, 178, 217)"
+    },
+    {
+      "name": "apple",
+      "color": "rgb(38, 167, 217)"
+    },
+    {
+      "name": "sandwich",
+      "color": "rgb(38, 155, 217)"
+    },
+    {
+      "name": "orange",
+      "color": "rgb(38, 144, 217)"
+    },
+    {
+      "name": "broccoli",
+      "color": "rgb(38, 132, 217)"
+    },
+    {
+      "name": "carrot",
+      "color": "rgb(38, 121, 217)"
+    },
+    {
+      "name": "hot dog",
+      "color": "rgb(38, 109, 217)"
+    },
+    {
+      "name": "pizza",
+      "color": "rgb(38, 98, 217)"
+    },
+    {
+      "name": "donut",
+      "color": "rgb(38, 86, 217)"
+    },
+    {
+      "name": "cake",
+      "color": "rgb(38, 75, 217)"
+    },
+    {
+      "name": "chair",
+      "color": "rgb(38, 64, 217)"
+    },
+    {
+      "name": "couch",
+      "color": "rgb(38, 52, 217)"
+    },
+    {
+      "name": "potted plant",
+      "color": "rgb(38, 41, 217)"
+    },
+    {
+      "name": "bed",
+      "color": "rgb(47, 38, 217)"
+    },
+    {
+      "name": "dining table",
+      "color": "rgb(59, 38, 217)"
+    },
+    {
+      "name": "toilet",
+      "color": "rgb(70, 38, 217)"
+    },
+    {
+      "name": "tv",
+      "color": "rgb(82, 38, 217)"
+    },
+    {
+      "name": "laptop",
+      "color": "rgb(93, 38, 217)"
+    },
+    {
+      "name": "mouse",
+      "color": "rgb(105, 38, 217)"
+    },
+    {
+      "name": "remote",
+      "color": "rgb(116, 38, 217)"
+    },
+    {
+      "name": "keyboard",
+      "color": "rgb(127, 38, 217)"
+    },
+    {
+      "name": "cell phone",
+      "color": "rgb(139, 38, 217)"
+    },
+    {
+      "name": "microwave",
+      "color": "rgb(150, 38, 217)"
+    },
+    {
+      "name": "oven",
+      "color": "rgb(162, 38, 217)"
+    },
+    {
+      "name": "toaster",
+      "color": "rgb(173, 38, 217)"
+    },
+    {
+      "name": "sink",
+      "color": "rgb(185, 38, 217)"
+    },
+    {
+      "name": "refrigerator",
+      "color": "rgb(196, 38, 217)"
+    },
+    {
+      "name": "book",
+      "color": "rgb(208, 38, 217)"
+    },
+    {
+      "name": "clock",
+      "color": "rgb(217, 38, 214)"
+    },
+    {
+      "name": "vase",
+      "color": "rgb(217, 38, 203)"
+    },
+    {
+      "name": "scissors",
+      "color": "rgb(217, 38, 192)"
+    },
+    {
+      "name": "teddy bear",
+      "color": "rgb(217, 38, 180)"
+    },
+    {
+      "name": "hair drier",
+      "color": "rgb(217, 38, 169)"
+    },
+    {
+      "name": "toothbrush",
+      "color": "rgb(217, 38, 157)"
+    }
+  ]
+}

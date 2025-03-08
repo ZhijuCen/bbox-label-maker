@@ -1,0 +1,23 @@
+{
+  "name": "image_annotator",
+  "version": "0.0.1",
+  "description": "An image annotation tool",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Zhiju Cen",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^34.2.0"
+  },
+  "dependencies": {
+    "@tensorflow-models/coco-ssd": "^2.2.3",
+    "@tensorflow/tfjs-node": "^4.22.0",
+    "jimp": "^1.6.0",
+    "ndarray": "^1.0.19",
+    "onnxruntime-node": "^1.20.1",
+    "onnxruntime-web": "^1.20.1"
+  }
+}
