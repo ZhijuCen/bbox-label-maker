@@ -31,5 +31,5 @@ contextBridge.exposeInMainWorld('tfjsAPI', {
 
 // 暴露 ortAPI
 contextBridge.exposeInMainWorld('ortAPI', {
-  detectObjectsYOLO: (imageData) => ipcRenderer.invoke('ort:detectObjectsYOLO', imageData)
+  detectObjectsYOLO: (args) => ipcRenderer.invoke('ort:detectObjectsYOLO', args)
 });

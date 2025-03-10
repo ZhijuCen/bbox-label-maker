@@ -56,6 +56,7 @@ document.getElementById('open-dir').addEventListener('click', async () => {
 document.getElementById("language-switcher").addEventListener("change", (e) => {
   const selectedLang = e.target.value;
   switchLanguage(selectedLang);
+  updateAnnotationList();
 });
 
 // Canvas 交互逻辑
@@ -185,7 +186,7 @@ function updateAnnotationList() {
           <div class="controls-row">
             <input type="number" class="width-input" value="${Math.round(width)}" min="1">
             <input type="number" class="height-input" value="${Math.round(height)}" min="1">
-            <button class="delete-btn">${translate("deleteCategory")}</button>
+            <button class="delete-btn">${translate("delete")}</button>
           </div>
         </div>
       </div>
@@ -572,7 +573,7 @@ function updateCategoryList() {
     <div class="category-item" data-name="${category.name}" style="background-color: ${category.color || "rgb(255, 0, 0)"};">
       <span class="category-name">${category.name}</span>
       <button class="edit-category-btn" data-name="${category.name}">${translate("editCategory")}</button>
-      <button class="delete-category-btn" data-name="${category.name}">${translate("deleteCategory")}</button>
+      <button class="delete-category-btn" data-name="${category.name}">${translate("delete")}</button>
     </div>
   `).join('');
 
@@ -804,9 +805,10 @@ document.getElementById('detect-objects').addEventListener('click', async () => 
         // 根据用户选择的模型调用不同的检测函数
         let bboxes = [];
         if (selectedModel === 'ssd') {
-            bboxes = await window.tfjsAPI.detectObjectsSSD(imgObject);
-        } else if (selectedModel === 'yolo') {
-            bboxes = await window.ortAPI.detectObjectsYOLO(imgObject);
+          bboxes = await window.tfjsAPI.detectObjectsSSD(imgObject);
+        } else if (selectedModel.startsWith('yolo')) {
+          let version = selectedModel.split('-')[1];
+          bboxes = await window.ortAPI.detectObjectsYOLO({...imgObject, version});
         }
 
         // 过滤掉与现有 BBox 冲突的 prediction

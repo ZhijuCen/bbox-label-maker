@@ -14,7 +14,7 @@ const { OrtYoloCoco } = require('./object_detections/ort_yolo_coco');
 
 let mainWindow = null;
 let modelSSD = null;
-let modelYolo = null;
+let modelYolo = {};
 
 async function handleFileOpen() {
   const { canceled, filePaths } = await dialog.showOpenDialog({
@@ -83,16 +83,17 @@ function createWindow() {
     return filterBBoxOutOfBound(predictions, width, height);
   })
 
-  ipcMain.handle('ort:detectObjectsYOLO', async (_, imageData) => {
-    if (!modelYolo) {
-      modelYolo = new OrtYoloCoco('models/yolo11x.onnx');
-      await modelYolo.init();
+  ipcMain.handle('ort:detectObjectsYOLO', async (_, args) => {
+    const {data, width, height, version} = args;
+
+    if (!modelYolo[version]) {
+      modelYolo[version] = new OrtYoloCoco(`models/yolo${version}.onnx`);
+      await modelYolo[version].init();
     }
-    const {data, width, height} = imageData;
     const imgBuffer = Buffer.from(data, 'base64');
 
     // 调用模型进行推理
-    const predictions = await modelYolo.predict(imgBuffer);
+    const predictions = await modelYolo[version].predict(imgBuffer);
 
     return filterBBoxOutOfBound(predictions, width, height);
 

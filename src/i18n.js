@@ -13,13 +13,10 @@ const translations = {
     categoryAction: "Handle Undefined Categories:",
     addCategory: "Add Category",
     reassignColors: "Reassign Colors",
-    deleteCategory: "Delete",
     editCategory: "Edit",
     annotationList: "Annotation List",
     categoryManagement: "Category Management",
     modelSelect: "Select Model:",
-    modelSSD: "SSD",
-    modelYOLO: "YOLO",
     actionIgnore: "Ignore",
     actionAdd: "Add to Category Management",
     categoryNamePlaceholder: "Enter category name",
@@ -43,6 +40,7 @@ const translations = {
     confirm: "Confirm",
     save: "Save",
     cancel: "Cancel",
+    delete: "Delete",
   },
   zh: {
     openDir: "打开目录",
@@ -55,13 +53,10 @@ const translations = {
     categoryAction: "处理未定义类别:",
     addCategory: "添加类别",
     reassignColors: "重新分配颜色",
-    deleteCategory: "删除",
     editCategory: "编辑",
     annotationList: "标注列表",
     categoryManagement: "类别管理",
     modelSelect: "选择模型:",
-    modelSSD: "SSD",
-    modelYOLO: "YOLO",
     actionIgnore: "忽略",
     actionAdd: "加入类别管理",
     categoryNamePlaceholder: "请输入类别名称",
@@ -85,6 +80,7 @@ const translations = {
     confirm: "确认",
     save: "保存",
     cancel: "取消",
+    delete: "删除",
   },
 };
 
@@ -139,11 +135,16 @@ function updateUI() {
 
   // 更新类别管理中的按钮文本
   document.querySelectorAll(".delete-category-btn").forEach(btn => {
-    btn.textContent = translate("deleteCategory");
+    btn.textContent = translate("delete");
   });
   document.querySelectorAll(".edit-category-btn").forEach(btn => {
     btn.textContent = translate("editCategory");
   });
+
+//   // 更新标注列表中的按钮文本
+//   document.querySelectorAll(".delete-btn").forEach(btn => {
+//     btn.textContent = translate("delete");
+//   });
 
   // 更新 #category-action 下拉选项
   const categoryActionSelect = document.getElementById("category-action");
@@ -151,15 +152,6 @@ function updateUI() {
     categoryActionSelect.innerHTML = `
       <option value="ignore">${translate("actionIgnore")}</option>
       <option value="add">${translate("actionAdd")}</option>
-    `;
-  }
-
-  // 更新 #model-select 下拉选项
-  const modelSelect = document.getElementById("model-select");
-  if (modelSelect) {
-    modelSelect.innerHTML = `
-      <option value="ssd">${translate("modelSSD")}</option>
-      <option value="yolo">${translate("modelYOLO")}</option>
     `;
   }
 
