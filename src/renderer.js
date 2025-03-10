@@ -157,15 +157,16 @@ canvas.addEventListener('mousedown', (e) => {
     currentBox = selected;
     isDrawing = false;
   } else {
-    if (!selectedClass) {
-      alert('请先在类别管理下选择一个类别，再创建 BBox。');
-      return ;
+    // 验证 selectedClass 是否有效
+    if (!selectedClass || !categories.some((cat) => cat.name === selectedClass.name)) {
+      alert('请选择有效的类别后创建 BBox。');
+      return;
     }
     isDrawing = true;
     startPos = { x, y };
     currentBox = {
       bbox: [x, y, 0, 0],
-      class: selectedClass?.name || (categories[0]?.name || null),
+      class: selectedClass.name,
       score: 1
     };
 
@@ -597,7 +598,11 @@ function showDeleteCategoryModal(className) {
       });
     }
 
-    categories = categories.filter(cat => cat.name !== className);
+    // 更新 categories 并重置 selectedClass
+    categories = categories.filter((cat) => cat.name !== className);
+    if (selectedClass?.name === className) {
+      selectedClass = null; // 重置选中状态
+    }
     updateCategoryList();
     drawCanvas();
     updateAnnotationList();
@@ -667,6 +672,27 @@ function updateCategoryList() {
       item.classList.add('selected');
     });
   });
+
+  // 重新应用选中状态（确保在渲染完成后执行）
+  requestAnimationFrame(() => {
+    if (selectedClass) {
+      const selectedItem = document.querySelector(
+        `.category-item[data-name="${selectedClass.name}"]`
+      );
+      if (selectedItem) {
+        selectedItem.classList.add('selected');
+      } else {
+        // 若当前选中的类别不存在，重置 selectedClass
+        selectedClass = null;
+      }
+    } else {
+      // 移除所有选中状态
+      document.querySelectorAll('.category-item').forEach(item => {
+        item.classList.remove('selected');
+      });
+    }
+  })
+
 }
 
 // 更改类别名称及颜色
@@ -689,28 +715,33 @@ function editCategory(name) {
     const newName = categoryItem.querySelector('.edit-name').value.trim();
     const newColor = categoryItem.querySelector('.edit-color').value;
 
-    // 检查新名称是否为空或重复
     if (!newName) {
-      alert(translate("categoryNamePlaceholder")); // 提示用户输入类别名称
-      return;
-    }
-    if (categories.some(cat => cat.name === newName && cat.name !== name)) {
-      alert(translate("duplicateCategoryName")); // 提示类别名称已存在
+      alert('类别名称不能为空');
       return;
     }
 
-    // 更新类别信息
+    if (categories.some((cat) => cat.name === newName && cat.name !== name)) {
+      alert('类别名称已存在');
+      return;
+    }
+
+    // 更新类别信息并重置 selectedClass 如果名称变化
+    const oldName = name;
     category.name = newName;
     category.color = newColor;
 
-    // 更新标注框的类别名称
-    annotations.bboxes.forEach(box => {
-      if (box.class === name) {
+    // 更新所有 BBox 的类别名称
+    annotations.bboxes.forEach((box) => {
+      if (box.class === oldName) {
         box.class = newName;
       }
     });
 
-    // 重新渲染类别列表和标注列表
+    // 若当前选中的是被修改的类别，更新 selectedClass
+    if (selectedClass?.name === oldName) {
+      selectedClass.name = newName;
+    }
+
     updateCategoryList();
     drawCanvas();
     updateAnnotationList();
