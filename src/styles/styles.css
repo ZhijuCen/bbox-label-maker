@@ -59,6 +59,12 @@ body {
   margin-top: 10px;
 }
 
+.category-handling {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
+}
+
 .iou-control, .category-handling {
   display: flex;
   align-items: center;

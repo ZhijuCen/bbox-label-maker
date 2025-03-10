@@ -1,5 +1,7 @@
 // renderer.js
 
+import { switchLanguage, translate } from "./i18n.js";
+
 const imageList = document.getElementById('image-list');
 /** @type {HTMLCanvasElement} */
 const canvas = document.getElementById('annotation-canvas');
@@ -48,6 +50,12 @@ document.getElementById('open-dir').addEventListener('click', async () => {
       };
     });
   });
+});
+
+// 初始化语言切换
+document.getElementById("language-switcher").addEventListener("change", (e) => {
+  const selectedLang = e.target.value;
+  switchLanguage(selectedLang);
 });
 
 // Canvas 交互逻辑
@@ -165,7 +173,7 @@ function updateAnnotationList() {
     return `
       <div class="annotation-item" data-index="${index}">
         <div class="annotation-info">
-          BBox: (${Math.round(x)}, ${Math.round(y)}) 
+          ${translate("annotationInfo")}: (${Math.round(x)}, ${Math.round(y)}) 
           [${Math.round(width)}x${Math.round(height)}]
         </div>
         <div class="annotation-controls">
@@ -177,7 +185,7 @@ function updateAnnotationList() {
           <div class="controls-row">
             <input type="number" class="width-input" value="${Math.round(width)}" min="1">
             <input type="number" class="height-input" value="${Math.round(height)}" min="1">
-            <button class="delete-btn">删除</button>
+            <button class="delete-btn">${translate("deleteCategory")}</button>
           </div>
         </div>
       </div>
@@ -245,10 +253,10 @@ async function handleMissingCategories(missingCategories) {
     modal.classList.add('modal');
 
     modal.innerHTML = `
-      <h3>检测到未定义的类别</h3>
-      <p>以下类别在当前类别管理中不存在，请选择处理方式：</p>
+      <h3>${translate("missingCategoriesTitle")}</h3>
+      <p>${translate("missingCategoriesMessage")}</p>
       <div id="missing-categories-list"></div>
-      <button id="confirm-missing-categories">确认</button>
+      <button id="confirm-missing-categories">${translate("confirm")}</button>
     `;
 
     const listContainer = modal.querySelector('#missing-categories-list');
@@ -258,8 +266,8 @@ async function handleMissingCategories(missingCategories) {
         <div style="margin-bottom: 10px;">
           <span>${className}</span>
           <select class="category-action" data-name="${className}">
-            <option value="add">新增为新类别</option>
-            <option value="assign">分配到现有类别</option>
+            <option value="add">${translate("actionAdd")}</option>
+            <option value="assign">${translate("actionAssign")}</option>
           </select>
           <select class="existing-category" style="display: none;">
             ${categories.map(cat => `<option value="${cat.name}">${cat.name}</option>`).join('')}
@@ -491,17 +499,32 @@ function showDeleteCategoryModal(className) {
   const modal = document.createElement('div');
   modal.classList.add('modal');
 
+  // 使用 translate 函数生成翻译后的文本
+  const title = translate("deleteCategoryTitle");
+  const message = translate("deleteCategoryMessage").replace("${className}", className);
+  const deleteOptionText = translate("deleteActionDelete").replace("${className}", className);
+  const reassignOptionText = translate("deleteActionReassign").replace("${className}", className);
+
   modal.innerHTML = `
-    <h3>删除类别</h3>
-    <p>存在属于“${className}”类别的 BBox，请选择处理方式：</p>
+    <h3>${title}</h3>
+    <p>${message}</p>
     <div id="delete-category-options">
-      <label><input type="radio" name="action" value="delete" checked> 删除所有属于“${className}”类别的 BBox</label><br>
-      <label><input type="radio" name="action" value="reassign"> 将所有属于“${className}”类别的 BBox 转为其他类别</label>
+      <label>
+        <input type="radio" name="action" value="delete" checked>
+        ${deleteOptionText}
+      </label><br>
+      <label>
+        <input type="radio" name="action" value="reassign">
+        ${reassignOptionText}
+      </label>
       <select id="reassign-category-select" style="display: none;">
-        ${categories.filter(cat => cat.name !== className).map(cat => `<option value="${cat.name}">${cat.name}</option>`).join('')}
+        ${categories
+          .filter(cat => cat.name !== className)
+          .map(cat => `<option value="${cat.name}">${cat.name}</option>`)
+          .join("")}
       </select>
     </div>
-    <button id="confirm-delete-category">确认</button>
+    <button id="confirm-delete-category">${translate("confirm")}</button>
   `;
 
   const radioButtons = modal.querySelectorAll('input[name="action"]');
@@ -516,8 +539,6 @@ function showDeleteCategoryModal(className) {
       }
     });
   });
-
-  document.body.appendChild(modal);
 
   modal.querySelector('#confirm-delete-category').addEventListener('click', () => {
     const action = modal.querySelector('input[name="action"]:checked').value;
@@ -540,6 +561,8 @@ function showDeleteCategoryModal(className) {
 
     modal.remove();
   });
+
+  document.body.appendChild(modal);
 }
 
 // 更新类别列表
@@ -548,8 +571,8 @@ function updateCategoryList() {
   categoryList.innerHTML = categories.map(category => `
     <div class="category-item" data-name="${category.name}" style="background-color: ${category.color || "rgb(255, 0, 0)"};">
       <span class="category-name">${category.name}</span>
-      <button class="edit-category-btn" data-name="${category.name}">编辑</button>
-      <button class="delete-category-btn" data-name="${category.name}">删除</button>
+      <button class="edit-category-btn" data-name="${category.name}">${translate("editCategory")}</button>
+      <button class="delete-category-btn" data-name="${category.name}">${translate("deleteCategory")}</button>
     </div>
   `).join('');
 
@@ -604,10 +627,10 @@ function editCategory(name) {
   // 创建编辑界面
   const categoryItem = document.querySelector(`.category-item[data-name="${name}"]`);
   categoryItem.innerHTML = `
-    <input type="text" class="edit-name" value="${category.name}">
+    <input type="text" class="edit-name" value="${category.name}" placeholder="${translate("categoryNamePlaceholder")}">
     <input type="color" class="edit-color" value="${category.color}">
-    <button class="save-edit-btn" data-name="${name}">保存</button>
-    <button class="cancel-edit-btn" data-name="${name}">取消</button>
+    <button class="save-edit-btn" data-name="${name}">${translate("save")}</button>
+    <button class="cancel-edit-btn" data-name="${name}">${translate("cancel")}</button>
   `;
 
   // 绑定保存按钮事件
@@ -618,11 +641,11 @@ function editCategory(name) {
 
     // 检查新名称是否为空或重复
     if (!newName) {
-      alert('类别名称不能为空');
+      alert(translate("categoryNamePlaceholder")); // 提示用户输入类别名称
       return;
     }
     if (categories.some(cat => cat.name === newName && cat.name !== name)) {
-      alert('类别名称已存在，请使用不同的名称。');
+      alert(translate("duplicateCategoryName")); // 提示类别名称已存在
       return;
     }
 
@@ -752,7 +775,7 @@ document.getElementById('detect-objects').addEventListener('click', async () => 
     const selectedModel = document.getElementById('model-select').value;
 
     // 修改按钮状态
-    detectButton.textContent = '正在进行推理';
+    detectButton.textContent = translate("detectingObjects");
     detectButton.disabled = true;
 
     try {
@@ -816,7 +839,7 @@ document.getElementById('detect-objects').addEventListener('click', async () => 
         console.error('Error during object detection:', error);
     } finally {
         // 恢复按钮状态
-        detectButton.textContent = '一键生成 BBox';
+        detectButton.textContent = translate("detectObjects");
         detectButton.disabled = false;
     }
 });
