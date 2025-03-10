@@ -207,8 +207,8 @@ function updateAnnotationList() {
             `).join('')}
           </select>
           <div class="controls-row">
-            <input type="number" class="width-input" value="${Math.round(width)}" min="1">
-            <input type="number" class="height-input" value="${Math.round(height)}" min="1">
+            <input type="number" class="width-input" value="${Math.round(width)}" min="1" max="${currentImage.width}">
+            <input type="number" class="height-input" value="${Math.round(height)}" min="1" max="${currentImage.height}">
             <button class="delete-btn">${translate("delete")}</button>
           </div>
         </div>
@@ -596,7 +596,7 @@ function updateCategoryList() {
     <div class="category-item" data-name="${category.name}" style="background-color: ${category.color || "rgb(255, 0, 0)"};">
       <span class="category-name">${category.name}</span>
       <button class="edit-category-btn" data-name="${category.name}">${translate("editCategory")}</button>
-      <button class="delete-category-btn" data-name="${category.name}">${translate("delete")}</button>
+      <button class="delete-btn delete-category-btn" data-name="${category.name}">${translate("delete")}</button>
     </div>
   `).join('');
 
