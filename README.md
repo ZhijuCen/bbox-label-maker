@@ -30,6 +30,8 @@ Copy `node_modules/@tensorflow/tfjs-node/lib/napi-v10/tensorflow.dll`
 to `node_modules/@tensorflow/tfjs-node/lib/napi-v8/tensorflow.dll`
 due to [Issue #8431](https://github.com/tensorflow/tfjs/issues/8431)
 
+Place `yolo11x.onnx` and `yolov8x.onnx` in `./models`, [Details](./models/README.md)
+
 ## Run
 
 ```sh
