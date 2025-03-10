@@ -59,6 +59,29 @@ document.getElementById("language-switcher").addEventListener("change", (e) => {
   updateAnnotationList();
 });
 
+// 主题切换初始化
+const themeToggleBtn = document.getElementById('theme-toggle');
+let isDarkMode = false;
+
+// 检查系统默认主题
+if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+  document.documentElement.setAttribute('data-theme', 'dark');
+  isDarkMode = true;
+  themeToggleBtn.textContent = '☀️';
+}
+
+// 添加主题切换事件
+themeToggleBtn.addEventListener('click', () => {
+  isDarkMode = !isDarkMode;
+  if (isDarkMode) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    themeToggleBtn.textContent = '☀️'; // 太阳表示可以切换到白天模式
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    themeToggleBtn.textContent = '🌙'; // 月亮表示可以切换到黑夜模式
+  }
+});
+
 // Canvas 交互逻辑
 canvas.addEventListener('mousedown', (e) => {
   if (!currentImage)
