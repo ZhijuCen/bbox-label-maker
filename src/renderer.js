@@ -26,6 +26,47 @@ let startPos = { x: 0, y: 0 };
 let currentBox = null;
 let scale = 1;
 
+/**
+ * 创建可复用的确认/取消模态框
+ * @param {string} title 标题
+ * @param {string} content 内容 HTML
+ * @param {Function} confirmCallback 确认回调
+ * @param {Function} [cancelCallback] 取消回调（可选）
+ * @param {Object} [options] 其他选项
+ * @returns {HTMLElement} 创建的模态框元素
+ */
+function createConfirmModal(title, content, confirmCallback, cancelCallback, options) {
+  const modal = document.createElement('div');
+  modal.classList.add('modal');
+  
+  modal.innerHTML = `
+    <h3>${title}</h3>
+    <div class="modal-content">${content}</div>
+    <div class="modal-buttons">
+      <button class="confirm-btn">${translate('confirm')}</button>
+      <button class="cancel-btn">${translate('cancel')}</button>
+    </div>
+  `;
+
+  // 绑定事件
+  modal.querySelector('.confirm-btn').addEventListener('click', () => {
+    confirmCallback(modal);
+    modal.remove();
+  });
+
+  modal.querySelector('.cancel-btn').addEventListener('click', () => {
+    if (cancelCallback) cancelCallback();
+    modal.remove();
+  });
+
+  // 自定义样式
+  if (options?.width) modal.style.maxWidth = options.width;
+  if (options?.customClass) modal.classList.add(options.customClass);
+
+  document.body.appendChild(modal);
+  return modal;
+}
+
 // 初始化界面
 document.getElementById('open-dir').addEventListener('click', async () => {
   const dirPath = await window.electronAPI.openDirectory();
@@ -282,78 +323,60 @@ function updateAnnotationList() {
   * @param {string[]} missingCategories - 未定义的类别名称列表
 */
 async function handleMissingCategories(missingCategories) {
-  return new Promise((resolve) => {
-    const modal = document.createElement('div');
-    modal.classList.add('modal');
-
-    modal.innerHTML = `
-      <h3>${translate("missingCategoriesTitle")}</h3>
-      <p>${translate("missingCategoriesMessage")}</p>
+  return new Promise(resolve => {
+    const content = `
       <div id="missing-categories-list"></div>
-      <button id="confirm-missing-categories">${translate("confirm")}</button>
     `;
+    
+    const modal = createConfirmModal(
+      translate("missingCategoriesTitle"),
+      content,
+      (modal) => {
+        const items = Array.from(modal.querySelectorAll('.category-action')).map(select => ({
+          className: select.dataset.name,
+          action: select.value,
+          targetCategory: select.nextElementSibling.value
+        }));
 
+        items.forEach(item => {
+          if (item.action === 'assign') {
+            annotations.bboxes.forEach(box => {
+              if (box.class === item.className) box.class = item.targetCategory;
+            });
+          } else {
+            categories.push({ name: item.className, color: '#ff0000' });
+          }
+        });
+
+        resolve();
+      },
+      () => resolve(),
+      { width: '450px' }
+    );
+
+    // 列表生成逻辑
     const listContainer = modal.querySelector('#missing-categories-list');
     missingCategories.forEach(className => {
-      const item = document.createElement('div');
-      item.innerHTML = `
-        <div style="margin-bottom: 10px;">
+      listContainer.innerHTML += `
+        <div class="category-item">
           <span>${className}</span>
           <select class="category-action" data-name="${className}">
             <option value="add">${translate("actionAdd")}</option>
             <option value="assign">${translate("actionAssign")}</option>
           </select>
           <select class="existing-category" style="display: none;">
-            ${categories.map(cat => `<option value="${cat.name}">${cat.name}</option>`).join('')}
+            ${categories.map(cat => `<option>${cat.name}</option>`).join('')}
           </select>
         </div>
       `;
-      listContainer.appendChild(item);
-
-      /** @type {HTMLSelectElement} */
-      const actionSelect = item.querySelector('.category-action');
-      /** @type {HTMLSelectElement} */
-      const existingCategorySelect = item.querySelector('.existing-category');
-
-      actionSelect.addEventListener('change', () => {
-        if (actionSelect.value === 'assign' && categories.length > 0) {
-          existingCategorySelect.style.display = 'inline-block';
-        }
-        else if (actionSelect.value === 'assign') {
-          alert('请先添加类别');
-          actionSelect.value = 'add';
-          existingCategorySelect.style.display = 'none';
-        }
-        else {
-          existingCategorySelect.style.display = 'none';
-        }
-      });
     });
 
-    document.body.appendChild(modal);
-
-    modal.querySelector('#confirm-missing-categories').addEventListener('click', () => {
-      const actions = Array.from(modal.querySelectorAll('.category-action')).map(select => {
-        const className = select.dataset.name;
-        const action = select.value;
-        const targetCategory = select.nextElementSibling.value;
-        return { className, action, targetCategory };
+    // 分配为 其他类别
+    modal.querySelectorAll('.category-action').forEach(select => {
+      select.addEventListener('change', () => {
+        const next = select.nextElementSibling;
+        next.style.display = select.value === 'assign' ? 'inline-block' : 'none';
       });
-
-      actions.forEach(({ className, action, targetCategory }) => {
-        if (action === 'assign') {
-          annotations.bboxes.forEach(box => {
-            if (box.class === className) {
-              box.class = targetCategory;
-            }
-          });
-        } else if (action === 'add') {
-          categories.push({ name: className, color: '#ff0000' });
-        }
-      });
-
-      modal.remove();
-      resolve();
     });
   });
 }
@@ -538,19 +561,14 @@ document.getElementById('reassign-colors-btn').addEventListener('click', () => {
  * @param {string} className - 要删除的类别名称
  */
 function showDeleteCategoryModal(className) {
-  const modal = document.createElement('div');
-  modal.classList.add('modal');
-
-  // 使用 translate 函数生成翻译后的文本
   const title = translate("deleteCategoryTitle");
   const message = translate("deleteCategoryMessage").replace("${className}", className);
   const deleteOptionText = translate("deleteActionDelete").replace("${className}", className);
   const reassignOptionText = translate("deleteActionReassign").replace("${className}", className);
 
-  modal.innerHTML = `
-    <h3>${title}</h3>
+  const content = `
     <p>${message}</p>
-    <div id="delete-category-options">
+    <div>
       <label>
         <input type="radio" name="action" value="delete" checked>
         ${deleteOptionText}
@@ -559,52 +577,42 @@ function showDeleteCategoryModal(className) {
         <input type="radio" name="action" value="reassign">
         ${reassignOptionText}
       </label>
-      <select id="reassign-category-select" style="display: none;">
-        ${categories
-          .filter(cat => cat.name !== className)
+      <select class="reassign-category-select" style="display: none;">
+        ${categories.filter(cat => cat.name !== className)
           .map(cat => `<option value="${cat.name}">${cat.name}</option>`)
-          .join("")}
+          .join('')}
       </select>
     </div>
-    <button id="confirm-delete-category">${translate("confirm")}</button>
   `;
 
-  const radioButtons = modal.querySelectorAll('input[name="action"]');
-  const reassignSelect = modal.querySelector('#reassign-category-select');
-
-  radioButtons.forEach(radio => {
-    radio.addEventListener('change', () => {
-      if (radio.value === 'reassign') {
-        reassignSelect.style.display = 'inline-block';
-      } else {
-        reassignSelect.style.display = 'none';
-      }
-    });
-  });
-
-  modal.querySelector('#confirm-delete-category').addEventListener('click', () => {
+  createConfirmModal(title, content, (modal) => {
     const action = modal.querySelector('input[name="action"]:checked').value;
+    const targetCategory = modal.querySelector('.reassign-category-select').value;
 
     if (action === 'delete') {
       annotations.bboxes = annotations.bboxes.filter(box => box.class !== className);
-    } else if (action === 'reassign') {
-      const targetCategory = reassignSelect.value;
+    } else {
       annotations.bboxes.forEach(box => {
-        if (box.class === className) {
-          box.class = targetCategory;
-        }
+        if (box.class === className) box.class = targetCategory;
       });
     }
 
-    categories = categories.filter(category => category.name !== className);
+    categories = categories.filter(cat => cat.name !== className);
     updateCategoryList();
     drawCanvas();
     updateAnnotationList();
-
-    modal.remove();
+  }, null, {
+    width: '450px'
   });
 
-  document.body.appendChild(modal);
+  // 保持原有事件逻辑
+  const radios = document.querySelectorAll(`.modal input[name="action"]`);
+  const select = document.querySelector('.reassign-category-select');
+  radios.forEach(radio => {
+    radio.addEventListener('change', () => {
+      select.style.display = radio.value === 'reassign' ? 'block' : 'none';
+    });
+  });
 }
 
 // 更新类别列表
