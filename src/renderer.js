@@ -1,5 +1,12 @@
 // renderer.js
 
+/**
+ * @typedef {Object} Annotation
+ * @property {number[]} bbox - [x, y, width, height]
+ * @property {string} class - 类别名称
+ * @property {number} score - 置信度
+ */
+
 import { switchLanguage, translate } from "./i18n.js";
 
 const imageList = document.getElementById('image-list');
@@ -9,8 +16,11 @@ const ctx = canvas.getContext('2d');
 const annotationList = document.getElementById('annotation-list');
 
 let currentImage = null;
-/** @type {object[]} */
-let annotations = [];
+let annotations = {
+  imageWidth: 0,
+  imageHeight: 0,
+  bboxes: []
+};
 let isDrawing = false;
 let startPos = { x: 0, y: 0 };
 let currentBox = null;
@@ -91,7 +101,7 @@ canvas.addEventListener('mousedown', (e) => {
   const y = (e.clientY - rect.top) / scale;
 
   // 检查是否点击了现有标注框的边框（允许3像素误差）
-  const selected = annotations.find(a => {
+  const selected = annotations.bboxes.find(a => {
     const [ax, ay, aw, ah] = a.bbox;
     const isNearLeftBorder = Math.abs(x - ax) <= 3;
     const isNearRightBorder = Math.abs(x - (ax + aw)) <= 3;
@@ -114,11 +124,11 @@ canvas.addEventListener('mousedown', (e) => {
     startPos = { x, y };
     currentBox = {
       bbox: [x, y, 0, 0],
-      class: selectedClass ? selectedClass.name : (categories[0] ? categories[0].name : null),
+      class: selectedClass?.name || (categories[0]?.name || null),
       score: 1
     };
 
-    annotations.push(currentBox);
+    annotations.bboxes.push(currentBox);
   }
 });
 
@@ -168,7 +178,7 @@ function drawCanvas(highlightIndex = -1) {
     ctx.drawImage(currentImage, 0, 0);
   }
 
-  annotations.forEach((box, index) => {
+  annotations.bboxes.forEach((box, index) => {
     const category = categories.find(cat => cat.name === box.class);
     const isHighlighted = index === highlightIndex;
 
@@ -192,7 +202,7 @@ function drawCanvas(highlightIndex = -1) {
  * 更新标注列表
  */
 function updateAnnotationList() {
-  annotationList.innerHTML = annotations.map((box, index) => {
+  annotationList.innerHTML = annotations.bboxes.map((box, index) => {
     const [x, y, width, height] = box.bbox;
     return `
       <div class="annotation-item" data-index="${index}">
@@ -220,7 +230,7 @@ function updateAnnotationList() {
   document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const index = Array.from(annotationList.children).indexOf(btn.closest('.annotation-item'));
-      annotations.splice(index, 1);
+      annotations.bboxes.splice(index, 1);
       drawCanvas();
       updateAnnotationList();
     });
@@ -229,7 +239,7 @@ function updateAnnotationList() {
   document.querySelectorAll('.category-select').forEach(select => {
     select.addEventListener('change', (e) => {
       const index = Array.from(annotationList.children).indexOf(select.closest('.annotation-item'));
-      annotations[index].class = e.target.value;
+      annotations.bboxes[index].class = e.target.value;
       drawCanvas();
       updateAnnotationList();
     });
@@ -238,7 +248,7 @@ function updateAnnotationList() {
   document.querySelectorAll('.width-input').forEach(input => {
     input.addEventListener('change', (e) => {
       const index = Array.from(annotationList.children).indexOf(input.closest('.annotation-item'));
-      annotations[index].bbox[2] = parseInt(e.target.value, 10);
+      annotations.bboxes[index].bbox[2] = parseInt(e.target.value, 10);
       drawCanvas();
       updateAnnotationList();
     });
@@ -247,7 +257,7 @@ function updateAnnotationList() {
   document.querySelectorAll('.height-input').forEach(input => {
     input.addEventListener('change', (e) => {
       const index = Array.from(annotationList.children).indexOf(input.closest('.annotation-item'));
-      annotations[index].bbox[3] = parseInt(e.target.value, 10);
+      annotations.bboxes[index].bbox[3] = parseInt(e.target.value, 10);
       drawCanvas();
       updateAnnotationList();
     });
@@ -332,7 +342,7 @@ async function handleMissingCategories(missingCategories) {
 
       actions.forEach(({ className, action, targetCategory }) => {
         if (action === 'assign') {
-          annotations.forEach(box => {
+          annotations.bboxes.forEach(box => {
             if (box.class === className) {
               box.class = targetCategory;
             }
@@ -362,7 +372,11 @@ document.getElementById('save-btn').addEventListener('click', async () => {
   else {
     dstPath = imgPath + '.json';
   }
-  await window.electronAPI.saveAnnotations(dstPath, annotations);
+  await window.electronAPI.saveAnnotations(dstPath, {
+    imageWidth: currentImage.width,
+    imageHeight: currentImage.height,
+    bboxes: annotations.bboxes
+  });
 });
 
 /**
@@ -379,17 +393,21 @@ async function loadAnnotations(imgPath) {
     else {
       srcPath = imgPath + '.json';
     }
-    annotations = await window.electronAPI.loadAnnotations(srcPath);
-    if (!annotations) annotations = [];
+    const data = await window.electronAPI.loadAnnotations(srcPath);
 
-    annotations = annotations.filter(box => box.class && box.bbox && box.bbox.length === 4);
-    annotations = annotations.map(box => {
+    annotations.imageWidth = currentImage.width;
+    annotations.imageHeight = currentImage.height;
+    annotations.bboxes = data?.bboxes?.filter(box =>
+      box.bbox && box.bbox.length === 4 && box.class
+    ) || [];
+
+    annotations.bboxes = annotations.bboxes.map(box => {
       box.score = box.score || 1;
       return box;
     })
 
     // 检测不存在的类别
-    const missingCategories = annotations
+    const missingCategories = annotations.bboxes
       .map(box => box.class)
       .filter((name, index, self) => name && !categories.find(cat => cat.name === name) && self.indexOf(name) === index);
 
@@ -402,7 +420,7 @@ async function loadAnnotations(imgPath) {
     updateAnnotationList();
   } catch (error) {
     console.error('Error loading annotations:', error);
-    annotations = [];
+    annotations = {imageWidth: 0, imageHeight: 0, bboxes: []};
   }
 }
 
@@ -503,7 +521,7 @@ document.getElementById('reassign-colors-btn').addEventListener('click', () => {
   });
 
   // 更新标注框的颜色
-  annotations.forEach(box => {
+  annotations.bboxes.forEach(box => {
     const category = categories.find(cat => cat.name === box.class);
     if (category) {
       box.class = category.name; // 确保类别名称一致
@@ -568,10 +586,10 @@ function showDeleteCategoryModal(className) {
     const action = modal.querySelector('input[name="action"]:checked').value;
 
     if (action === 'delete') {
-      annotations = annotations.filter(box => box.class !== className);
+      annotations.bboxes = annotations.bboxes.filter(box => box.class !== className);
     } else if (action === 'reassign') {
       const targetCategory = reassignSelect.value;
-      annotations.forEach(box => {
+      annotations.bboxes.forEach(box => {
         if (box.class === className) {
           box.class = targetCategory;
         }
@@ -604,7 +622,7 @@ function updateCategoryList() {
   document.querySelectorAll('.delete-category-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const name = btn.dataset.name;
-      const hasBBoxes = annotations.some(box => box.class === name);
+      const hasBBoxes = annotations.bboxes.some(box => box.class === name);
 
       if (hasBBoxes) {
         showDeleteCategoryModal(name);
@@ -678,7 +696,7 @@ function editCategory(name) {
     category.color = newColor;
 
     // 更新标注框的类别名称
-    annotations.forEach(box => {
+    annotations.bboxes.forEach(box => {
       if (box.class === name) {
         box.class = newName;
       }
@@ -835,7 +853,7 @@ document.getElementById('detect-objects').addEventListener('click', async () => 
         }
 
         // 过滤掉与现有 BBox 冲突的 prediction
-        var filteredBBoxes = bboxes.filter(newBox => !hasConflict(newBox, annotations, iouThreshold));
+        var filteredBBoxes = bboxes.filter(newBox => !hasConflict(newBox, annotations.bboxes, iouThreshold));
 
         // 处理未在 categories 中定义的类别
         const missingCategories = filteredBBoxes
@@ -856,7 +874,7 @@ document.getElementById('detect-objects').addEventListener('click', async () => 
         }
 
         // 将过滤后的 BBox 添加到标注列表中
-        annotations = annotations.concat(filteredBBoxes);
+        annotations.bboxes = annotations.bboxes.concat(filteredBBoxes);
 
         updateAnnotationList();
         drawCanvas();
