@@ -195,7 +195,12 @@ canvas.addEventListener('mousedown', (e) => {
   }
 });
 
+let lastDrawTime = 0;
 canvas.addEventListener('mousemove', (e) => {
+
+  const now = Date.now();
+  if (now - lastDrawTime < 1000 / 30) return;
+  lastDrawTime = now;
 
   const rect = canvas.getBoundingClientRect();
   const mouseX = (e.clientX - rect.left) / scale;
