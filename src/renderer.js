@@ -25,6 +25,27 @@ let isDrawing = false;
 let startPos = { x: 0, y: 0 };
 let currentBox = null;
 let scale = 1;
+let currentHoverIndex = -1;
+let scrollTimeout;
+
+/**
+ * 
+ * @param {number} index 
+ */
+function updateAnnotationListHighlight(index) {
+  const items = document.querySelectorAll('.annotation-item');
+  items.forEach((item, i) => {
+    item.classList.toggle('highlight', i === index);
+  });
+
+  clearTimeout(scrollTimeout);
+  scrollTimeout = setTimeout(() => {
+    const targetItem = document.querySelector(`.annotation-item[data-index="${index}"]`);
+    if (targetItem) {
+      targetItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, 100);
+}
 
 /**
  * 创建可复用的确认/取消模态框
@@ -138,19 +159,19 @@ canvas.addEventListener('mousedown', (e) => {
   if (!currentImage)
     return ;
   const rect = canvas.getBoundingClientRect();
-  const x = (e.clientX - rect.left) / scale;
-  const y = (e.clientY - rect.top) / scale;
+  const mouseX = (e.clientX - rect.left) / scale;
+  const mouseY = (e.clientY - rect.top) / scale;
 
   // 检查是否点击了现有标注框的边框（允许3像素误差）
   const selected = annotations.bboxes.find(a => {
     const [ax, ay, aw, ah] = a.bbox;
-    const isNearLeftBorder = Math.abs(x - ax) <= 3;
-    const isNearRightBorder = Math.abs(x - (ax + aw)) <= 3;
-    const isNearTopBorder = Math.abs(y - ay) <= 3;
-    const isNearBottomBorder = Math.abs(y - (ay + ah)) <= 3;
+    const isNearLeftBorder = Math.abs(mouseX - ax) <= 3;
+    const isNearRightBorder = Math.abs(mouseX - (ax + aw)) <= 3;
+    const isNearTopBorder = Math.abs(mouseY - ay) <= 3;
+    const isNearBottomBorder = Math.abs(mouseY - (ay + ah)) <= 3;
 
-    return (isNearLeftBorder || isNearRightBorder) && y >= ay && y <= ay + ah ||
-           (isNearTopBorder || isNearBottomBorder) && x >= ax && x <= ax + aw;
+    return (isNearLeftBorder || isNearRightBorder) && mouseY >= ay && mouseY <= ay + ah ||
+           (isNearTopBorder || isNearBottomBorder) && mouseX >= ax && mouseX <= ax + aw;
   });
 
   if (selected) {
@@ -163,9 +184,9 @@ canvas.addEventListener('mousedown', (e) => {
       return;
     }
     isDrawing = true;
-    startPos = { x, y };
+    startPos = { x: mouseX, y: mouseY };
     currentBox = {
-      bbox: [x, y, 0, 0],
+      bbox: [mouseX, mouseY, 0, 0],
       class: selectedClass.name,
       score: 1
     };
@@ -175,11 +196,33 @@ canvas.addEventListener('mousedown', (e) => {
 });
 
 canvas.addEventListener('mousemove', (e) => {
-  if ((!isDrawing && !currentBox) || !currentImage) return;
 
   const rect = canvas.getBoundingClientRect();
   const mouseX = (e.clientX - rect.left) / scale;
   const mouseY = (e.clientY - rect.top) / scale;
+
+  // 检测鼠标是否在BBox范围内（误差3px）
+  let hoverIndex = -1;
+  annotations.bboxes.forEach((box, index) => {
+    const [x, y, w, h] = box.bbox;
+    const isNearLeftBorder = Math.abs(mouseX - x) <= 3;
+    const isNearRightBorder = Math.abs(mouseX - (x + w)) <= 3;
+    const isNearTopBorder = Math.abs(mouseY - y) <= 3;
+    const isNearBottomBorder = Math.abs(mouseY - (y + h)) <= 3;
+    if ((isNearLeftBorder || isNearRightBorder) && mouseY >= y && mouseY <= y + h ||
+        (isNearTopBorder || isNearBottomBorder) && mouseX >= x && mouseX <= x + w) {
+      hoverIndex = index;
+    }
+  });
+
+  // 更新高亮状态
+  if (hoverIndex !== currentHoverIndex) {
+    currentHoverIndex = hoverIndex;
+    drawCanvas(currentHoverIndex);
+    updateAnnotationListHighlight(currentHoverIndex);
+  }
+
+  if ((!isDrawing && !currentBox) || !currentImage) return;
 
   if (isDrawing) {
     // 计算矩形的起点和宽高
@@ -191,7 +234,7 @@ canvas.addEventListener('mousemove', (e) => {
     // 更新当前矩形的位置和大小
     currentBox.bbox = [startX, startY, width, height];
   } else if (currentBox) {
-    // 移动矩形
+    // 移动 BBox
     currentBox.bbox[0] += mouseX - currentBox.bbox[0];
     currentBox.bbox[1] += mouseY - currentBox.bbox[1];
   }
@@ -201,6 +244,8 @@ canvas.addEventListener('mousemove', (e) => {
 
 canvas.addEventListener('mouseup', () => {
   isDrawing = false;
+  currentHoverIndex = -1;
+  clearTimeout(scrollTimeout);
 
   if (currentBox) {
     currentBox = null;
@@ -227,9 +272,9 @@ function drawCanvas(highlightIndex = -1) {
     // 使用 bbox 数据绘制矩形
     const [x, y, width, height] = box.bbox;
     ctx.strokeStyle = category ? category.color : '#ff0000';
-    ctx.lineWidth = 2;
     ctx.shadowColor = isHighlighted ? '#ffff00' : '';
     ctx.shadowBlur = isHighlighted ? 5 : 0;
+    ctx.lineWidth = isHighlighted ? 3 : 1;
     ctx.strokeRect(x, y, width, height);
 
     // 绘制类别名称
@@ -317,6 +362,9 @@ function updateAnnotationList() {
       drawCanvas(); // 恢复默认绘制
     });
   });
+
+  // 新增高亮同步逻辑
+  updateAnnotationListHighlight(currentHoverIndex);
 }
 
 /**
