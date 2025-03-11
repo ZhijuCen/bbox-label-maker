@@ -180,7 +180,7 @@ canvas.addEventListener('mousedown', (e) => {
   } else {
     // 验证 selectedClass 是否有效
     if (!selectedClass || !categories.some((cat) => cat.name === selectedClass.name)) {
-      alert('请选择有效的类别后创建 BBox。');
+      alert(translate('pleaseSelectValidCategory'));
       return;
     }
     isDrawing = true;
@@ -563,7 +563,7 @@ document.getElementById('add-category-btn').addEventListener('click', () => {
     // 检查是否已存在同名类别
     const existingCategory = categories.find(cat => cat.name === name);
     if (existingCategory) {
-      alert('类别名称已存在，请使用不同的名称。');
+      alert(translate('categoryNameExists'));
       return;
     }
 
@@ -764,12 +764,12 @@ function editCategory(name) {
     const newColor = categoryItem.querySelector('.edit-color').value;
 
     if (!newName) {
-      alert('类别名称不能为空');
+      alert(translate('categoryNameRequired'));
       return;
     }
 
     if (categories.some((cat) => cat.name === newName && cat.name !== name)) {
-      alert('类别名称已存在');
+      alert(translate('categoryNameExists'));
       return;
     }
 

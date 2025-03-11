@@ -19,7 +19,9 @@ const translations = {
     modelSelect: "Select Model:",
     actionIgnore: "Ignore",
     actionAdd: "Add to Category Management",
-    categoryNamePlaceholder: "Enter category name",
+    pleaseSelectValidCategory: "Please select a valid category before creating BBox",
+    categoryNameRequired: "Category name cannot be empty",
+    categoryNameExists: "Category name already exists",
     // On Missing Categories
     missingCategoriesTitle: "Undefined Categories Detected",
     missingCategoriesMessage: "The following categories are not defined in the current category management. Please choose how to handle them:",
@@ -59,7 +61,9 @@ const translations = {
     modelSelect: "选择模型:",
     actionIgnore: "忽略",
     actionAdd: "加入类别管理",
-    categoryNamePlaceholder: "请输入类别名称",
+    pleaseSelectValidCategory: "请选择有效的类别后创建 BBox",
+    categoryNameRequired: "类别名称不能为空",
+    categoryNameExists: "类别名称已存在",
 
     missingCategoriesTitle: "检测到未定义的类别",
     missingCategoriesMessage: "以下类别在当前类别管理中不存在，请选择处理方式：",
