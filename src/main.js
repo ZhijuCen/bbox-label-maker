@@ -8,11 +8,12 @@ require('@tensorflow/tfjs-backend-webgl');
 const tf = require('@tensorflow/tfjs-node');
 const cocoSsd = require('@tensorflow-models/coco-ssd');
 
-const { padToSquareFromBuffer, toOrtTensor, resizeImage } = require('./utils/image_process');
-const { filterBBoxOutOfBound, rescaleBBoxFromNormalized } = require('./object_detections/post_process');
+const { filterBBoxOutOfBound } = require('./object_detections/post_process');
 const { OrtYoloCoco } = require('./object_detections/ort_yolo_coco');
+const { TfSSDCoco } = require('./object_detections/tfjs_ssd_coco')
 
 let mainWindow = null;
+/** @type {cocoSsd.ObjectDetection} */
 let modelSSD = null;
 let modelYolo = {};
 
@@ -69,18 +70,15 @@ function createWindow() {
 
   ipcMain.handle('tfjs:detectObjectsSSD', async (_, imageData) => {
     if (!modelSSD) {
-      modelSSD = await cocoSsd.load();
+      modelSSD = new TfSSDCoco();
+      await modelSSD.init();
     }
     const {data, width, height} = imageData;
-    const imgBuffer = new Uint8Array(Buffer.from(data, 'base64'));
+    const imgBuffer = Buffer.from(data, 'base64');
 
-    const imgTensor = tf.node.decodeImage(imgBuffer, 3);
-    const wPadNum = width > height ? width - height : 0;
-    const hPadNum = height > width ? height - width : 0;
-    const imgTensorPadded = tf.pad3d(imgTensor, [[0, hPadNum], [0, wPadNum], [0, 0]], 0);
-    /** @type {object[]} */
-    const predictions = await modelSSD.detect(imgTensorPadded);
-    return filterBBoxOutOfBound(predictions, width, height);
+    const predictions = await modelSSD.predict(imgBuffer);
+
+    return predictions;
   })
 
   ipcMain.handle('ort:detectObjectsYOLO', async (_, args) => {
@@ -95,7 +93,7 @@ function createWindow() {
     // 调用模型进行推理
     const predictions = await modelYolo[version].predict(imgBuffer);
 
-    return filterBBoxOutOfBound(predictions, width, height);
+    return predictions;
 
   })
 

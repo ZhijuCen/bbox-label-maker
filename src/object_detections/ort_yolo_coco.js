@@ -1,7 +1,9 @@
 // ort_yolo_coco.js
 
+const { preprocessFromBuffer } = require('./pre_process.js')
+const { filterBBoxOutOfBound } = require('./post_process.js')
+
 const ort = require('onnxruntime-web');
-const { Jimp, BlendMode } = require('jimp');
 const ndarray = require('ndarray');
 
 /**
@@ -9,15 +11,6 @@ const ndarray = require('ndarray');
  * @property {number[]} bbox - 边界框坐标 [x, y, w, h]
  * @property {string} class - 类别名称
  * @property {number} score - 置信度
- */
-
-/**
- * @typedef {Object} Gain
- * @property {number} r - 缩放比例
- * @property {number} dw - 填充宽度
- * @property {number} dh - 填充高度
- * @property {number} top - 填充高度
- * @property {number} left - 填充宽度
  */
 
 /**
@@ -78,66 +71,8 @@ class OrtYoloCoco {
      * @returns {ort.Tensor, Gain} - 返回 预处理后的张量 以及 缩放参数
      */
     async preprocess(buffer) {
-        const img = await Jimp.read(buffer);
-        const [wSrc, hSrc] = [img.bitmap.width, img.bitmap.height];
-        const newShape = this.inputSize;
 
-
-        // 1. 计算缩放比例（关键修改）
-        const r = Math.min(newShape / hSrc, newShape / wSrc);
-        const newUnpad = {
-            width: Math.round(wSrc * r),
-            height: Math.round(hSrc * r)
-        };
-
-        // 2. 计算填充量（关键修改）
-        const dw = newShape - newUnpad.width;
-        const dh = newShape - newUnpad.height;
-        const top = Math.round(dh / 2);
-        const bottom = dh - top;
-        const left = Math.round(dw / 2);
-        const right = dw - left;
-        const gain = { r, dw, dh, top, left };
-
-        // 3. 缩放图像到未填充尺寸（关键修改）
-        const scaledImg = img.resize({w: newUnpad.width, h: newUnpad.height});
-
-        // 4. 创建填充画布（关键修改）
-        const paddedImg = new Jimp({
-            width: newShape,
-            height: newShape,
-            color: '#727272' // 114,114,114 背景色
-        });
-
-        // 5. 将缩放后的图像居中放置（关键修改）
-        paddedImg.composite(
-            scaledImg,
-            left,
-            top,
-            {
-                mode: BlendMode.SRC_OVER,
-                opacitySource: 1,
-                opacityDest: 0
-            }
-        );
-
-        const flattenArray = [];
-        for (let i = 0; i < paddedImg.bitmap.data.length; i += 4) {
-            const r = paddedImg.bitmap.data[i];
-            const g = paddedImg.bitmap.data[i + 1];
-            const b = paddedImg.bitmap.data[i + 2];
-            const a = paddedImg.bitmap.data[i + 3];
-            flattenArray.push(r / 255, g / 255, b / 255);
-        }
-        const imgArray = ndarray(flattenArray, [this.inputSize, this.inputSize, 3]).transpose(2, 0, 1);
-        const imgArrayData = [];
-        for (let i = 0; i < imgArray.shape[0]; i++) {
-            for (let j = 0; j < imgArray.shape[1]; j++) {
-                for (let k = 0; k < imgArray.shape[2]; k++) {
-                    imgArrayData.push(imgArray.get(i, j, k));
-                }
-            }
-        }
+        const {imgArrayData, gain} = await preprocessFromBuffer(buffer, this.inputSize, true, true);
 
         // 转换为 ONNX Tensor
         const tensor = new ort.Tensor(
@@ -218,7 +153,7 @@ class OrtYoloCoco {
             });
         }
 
-        return results;
+        return filterBBoxOutOfBound(results, gain.wSrc, gain.hSrc);
     }
 
     // 更新nmsIndices方法以直接处理LTWH坐标

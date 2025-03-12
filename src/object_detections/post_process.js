@@ -11,10 +11,10 @@
 /**
  * 
  * @param {Prediction[]} predictions
- * @param {number} srcW 
- * @param {number} srcH 
+ * @param {number} wSrc 
+ * @param {number} hSrc 
  */
-function filterBBoxOutOfBound(predictions, srcW, srcH) {
+function filterBBoxOutOfBound(predictions, wSrc, hSrc) {
     return predictions.filter(prediction => {
         const [x, y, w, h] = prediction.bbox;
         return (
@@ -22,8 +22,8 @@ function filterBBoxOutOfBound(predictions, srcW, srcH) {
             h > 0 &&
             x >= 0 &&
             y >= 0 &&
-            x + w <= srcW &&
-            y + h <= srcH
+            x + w <= wSrc &&
+            y + h <= hSrc
         );
     })
 }
@@ -31,21 +31,20 @@ function filterBBoxOutOfBound(predictions, srcW, srcH) {
 /**
  * 
  * @param {Prediction[]} predictions 
- * @param {number} srcW 
- * @param {number} srcH 
+ * @param {Gain} gain
  * @returns 
  */
-function rescaleBBoxFromNormalized(predictions, srcW, srcH) {
+function rescaleBBoxFromGain(predictions, gain) {
     return predictions.map(prediction => {
         const [x, y, w, h] = prediction.bbox;
         return {
             ...prediction,
-            bbox: [x * srcW, y * srcH, w * srcW, h * srcH].map(Math.floor)
+            bbox: [x / gain.r, y / gain.r, w / gain.r, h / gain.r].map(Math.floor)
         }
     })
 }
 
 module.exports = {
     filterBBoxOutOfBound,
-    rescaleBBoxFromNormalized
+    rescaleBBoxFromGain
 }
