@@ -16,8 +16,6 @@
     <body>
         <div class="toolbar">
             <button id="open-dir">打开目录</button>
-            <button id="zoom-in">放大</button>
-            <button id="zoom-out">缩小</button>
             <button id="save-btn">保存标注</button>
             <button id="import-btn">导入标注类别</button>
             <button id="export-btn">导出标注类别</button>
@@ -30,8 +28,16 @@
 
         <div class="container">
             <div id="image-list" class="image-list"></div>
-            <div class="canvas-container">
-                <canvas id="annotation-canvas"></canvas>
+            <div class="view-container">
+                <div class="canvas-container">
+                    <canvas id="annotation-canvas"></canvas>
+                </div>
+                <div class="zoom-control">
+                    <label for="zoom-range">缩放:</label>
+                    <input type="range" id="zoom-range" min="5" max="500" value="100">
+                    <input type="number" id="zoom-value" min="5" max="500" value="100">
+                    <span>%</span>
+                </div>
             </div>
             <div class="annotation-management">
                 <h3>标注列表</h3>

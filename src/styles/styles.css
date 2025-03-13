@@ -74,6 +74,13 @@ body {
   border-right: 1px solid var(--border-color);
 }
 
+.view-container {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
 .canvas-container {
   flex: 1;
   position: relative;
@@ -86,9 +93,33 @@ body {
   transform-origin: 0 0;
 }
 
+.zoom-control {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background-color: var(--toolbar-bg); /* 使用工具栏背景色 */
+  border-top: 1px solid var(--border-color); /* 添加分隔线 */
+  height: 40px; /* 固定高度 */
+}
+
+label[for="zoom-range"] {
+  margin-left: auto;
+}
+
+.zoom-control input[type="range"] {
+  width: 8vw;
+}
+
+.zoom-control input[type="number"] {
+  width: 60px;
+}
+
 .annotation-management,
 .category-management {
   display: flex;
+  flex-shrink: 0;
   flex-direction: column;
   height: 100%;
   padding: 10px;
@@ -262,10 +293,6 @@ select:focus {
 
 .edit-category-btn {
   margin-left: auto;
-}
-
-.delete-category-btn {
-  /* margin-left: auto; */
 }
 
 /* 弹窗与模态框 */

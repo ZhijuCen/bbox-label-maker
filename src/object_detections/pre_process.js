@@ -5,7 +5,7 @@ const ndarray = require('ndarray');
 
 /**
  * 预处理图像
- * @param {Uint8Array} buffer - 图像数据
+ * @param {Buffer} buffer - 图像数据
  * @param {number} outputSize - 输出尺寸
  * @param {boolean} [normalize=true] - 是否归一化
  * @param {boolean} [channelsFirst=true] - 是否通道在前

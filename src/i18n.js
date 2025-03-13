@@ -3,22 +3,26 @@
 // 定义语言资源
 const translations = {
   en: {
+    // Toolbar
     openDir: "Open Directory",
-    zoomIn: "Zoom In",
-    zoomOut: "Zoom Out",
     saveBtn: "Save Annotations",
     importBtn: "Import Categories",
     exportBtn: "Export Categories",
+    // Scale
+    scale: "Scale",
+    // Annotation Management
     iouThreshold: "IoU Threshold:",
     categoryAction: "Handle Undefined Categories:",
+    modelSelect: "Select Model:",
+    actionIgnore: "Ignore",
+    actionAdd: "Add to Category Management",
+    // Category Management
     addCategory: "Add Category",
     reassignColors: "Reassign Colors",
     editCategory: "Edit",
     annotationList: "Annotation List",
     categoryManagement: "Category Management",
-    modelSelect: "Select Model:",
-    actionIgnore: "Ignore",
-    actionAdd: "Add to Category Management",
+    // On Undefined Categories
     pleaseSelectValidCategory: "Please select a valid category before creating BBox",
     categoryNameRequired: "Category name cannot be empty",
     categoryNameExists: "Category name already exists",
@@ -38,7 +42,7 @@ const translations = {
     // On Detect Objects
     detectObjects: "Generate BBox",
     detectingObjects: "Detecting objects...",
-
+    // General
     confirm: "Confirm",
     save: "Save",
     cancel: "Cancel",
@@ -46,21 +50,24 @@ const translations = {
   },
   zh: {
     openDir: "打开目录",
-    zoomIn: "放大",
-    zoomOut: "缩小",
     saveBtn: "保存标注",
     importBtn: "导入标注类别",
     exportBtn: "导出标注类别",
+
+    scale: "缩放",
+
     iouThreshold: "IoU 阈值:",
     categoryAction: "处理未定义类别:",
+    modelSelect: "选择模型:",
+    actionIgnore: "忽略",
+    actionAdd: "加入类别管理",
+
     addCategory: "添加类别",
     reassignColors: "重新分配颜色",
     editCategory: "编辑",
     annotationList: "标注列表",
     categoryManagement: "类别管理",
-    modelSelect: "选择模型:",
-    actionIgnore: "忽略",
-    actionAdd: "加入类别管理",
+
     pleaseSelectValidCategory: "请选择有效的类别后创建 BBox",
     categoryNameRequired: "类别名称不能为空",
     categoryNameExists: "类别名称已存在",
@@ -119,12 +126,15 @@ function translate(key) {
 function updateUI() {
   // 更新按钮文本
   document.getElementById("open-dir").textContent = translate("openDir");
-  document.getElementById("zoom-in").textContent = translate("zoomIn");
-  document.getElementById("zoom-out").textContent = translate("zoomOut");
+  // document.getElementById("zoom-in").textContent = translate("zoomIn");
+  // document.getElementById("zoom-out").textContent = translate("zoomOut");
   document.getElementById("save-btn").textContent = translate("saveBtn");
   document.getElementById("import-btn").textContent = translate("importBtn");
   document.getElementById("export-btn").textContent = translate("exportBtn");
   document.getElementById("detect-objects").textContent = translate("detectObjects");
+
+  // 更新缩放 Label
+  document.querySelector('label[for="zoom-range"]').textContent = translate("scale");
 
   // 更新标签文本
   document.querySelector('label[for="iou-threshold"]').textContent = translate("iouThreshold");

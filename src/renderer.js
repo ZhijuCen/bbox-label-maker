@@ -290,6 +290,35 @@ function drawCanvas(highlightIndex = -1) {
   });
 }
 
+// 初始化缩放控件
+const zoomRange = document.getElementById('zoom-range');
+const zoomValue = document.getElementById('zoom-value');
+
+// 更新缩放比例函数
+function updateZoom() {
+  const zoomPercent = parseInt(zoomRange.value, 10);
+  scale = zoomPercent / 100; // 将百分比转换为缩放比例
+  canvas.style.transform = `scale(${scale})`;
+  drawCanvas(); // 重新绘制画布以适配缩放
+}
+
+// 绑定滑动条事件
+zoomRange.addEventListener('input', () => {
+  zoomValue.value = zoomRange.value; // 同步数字输入框的值
+  updateZoom();
+});
+
+// 绑定数字输入框事件
+zoomValue.addEventListener('change', () => {
+  zoomRange.value = zoomValue.value; // 同步滑动条的值
+  updateZoom();
+});
+
+// 初始化默认缩放比例
+zoomRange.value = 100; // 默认100%
+zoomValue.value = 100;
+updateZoom();
+
 /**
  * 更新标注列表
  */
@@ -502,15 +531,15 @@ async function loadAnnotations(imgPath) {
 }
 
 // 初始化缩放控制
-document.getElementById('zoom-in').addEventListener('click', () => {
-  scale *= 1.2;
-  canvas.style.transform = `scale(${scale})`;
-});
+// document.getElementById('zoom-in').addEventListener('click', () => {
+//   scale *= 1.2;
+//   canvas.style.transform = `scale(${scale})`;
+// });
 
-document.getElementById('zoom-out').addEventListener('click', () => {
-  scale *= 0.8;
-  canvas.style.transform = `scale(${scale})`;
-});
+// document.getElementById('zoom-out').addEventListener('click', () => {
+//   scale *= 0.8;
+//   canvas.style.transform = `scale(${scale})`;
+// });
 
 // Category Management
 let categories = [];
