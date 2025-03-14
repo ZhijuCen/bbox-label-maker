@@ -474,10 +474,10 @@ document.getElementById('save-btn').addEventListener('click', async () => {
   let dstPath;
   if (['jpg', 'png', 'gif', 'bmp'].find(ext => ext.toLowerCase() === imgExt)) {
     dstPath = imgPath.replace(/\.(jpg|png|gif|bmp)$/i, '.json');
-  }
-  else {
+  } else {
     dstPath = imgPath + '.json';
   }
+
   await window.electronAPI.saveAnnotations(dstPath, {
     imageWidth: currentImage.width,
     imageHeight: currentImage.height,
@@ -495,8 +495,7 @@ async function loadAnnotations(imgPath) {
     let srcPath;
     if (['jpg', 'png', 'gif', 'bmp'].find(ext => ext.toLowerCase() === imgExt)) {
       srcPath = imgPath.replace(/\.(jpg|png|gif|bmp)$/i, '.json');
-    }
-    else {
+    } else {
       srcPath = imgPath + '.json';
     }
     const data = await window.electronAPI.loadAnnotations(srcPath);

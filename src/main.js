@@ -24,13 +24,24 @@ async function handleFileOpen() {
   return canceled ? null : filePaths[0]
 }
 
+async function ensureAnnotationsDir(dirPath) {
+  const annotationsDir = path.join(dirPath, '.annotations');
+  try {
+    await fs.mkdir(annotationsDir, { recursive: true }); // 确保目录存在
+    return annotationsDir;
+  } catch (error) {
+    console.error('Error creating .annotations directory:', error);
+    throw error;
+  }
+}
+
 async function readDirectory(dirPath) {
   try {
     const files = await fs.readdir(dirPath)
     return files.filter(file => /\.(png|jpg|gif|bmp)$/i.test(file))
   } catch (error) {
-    console.error('Error reading directory:', error)
-    return []
+    console.error('Error reading directory:', error);
+    return [];
   }
 }
 
@@ -56,11 +67,22 @@ function createWindow() {
     return buffer.toString('base64')
   })
   ipcMain.handle('fs:saveAnnotations', async (_, { filePath, data }) => {
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2))
-  })
+    try {
+      const dirPath = path.dirname(filePath);
+      const annotationsDir = await ensureAnnotationsDir(dirPath); // 确保 .annotations 存在
+      const annotationFilePath = path.join(annotationsDir, path.basename(filePath));
+      await fs.writeFile(annotationFilePath, JSON.stringify(data, null, 2));
+    } catch (error) {
+      console.error('Error saving annotations:', error);
+      throw error;
+    }
+  });
   ipcMain.handle('fs:loadAnnotations', async (_, filePath) => {
     try {
-      const data = await fs.readFile(filePath, 'utf-8');
+      const dirPath = path.dirname(filePath);
+      const annotationsDir = await ensureAnnotationsDir(dirPath); // 确保 .annotations 存在
+      const annotationFilePath = path.join(annotationsDir, path.basename(filePath));
+      const data = await fs.readFile(annotationFilePath, 'utf-8');
       return JSON.parse(data);
     } catch (error) {
       console.error('Error loading annotations:', error);

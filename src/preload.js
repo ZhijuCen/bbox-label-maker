@@ -21,7 +21,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
 // 暴露必要的path模块方法
 contextBridge.exposeInMainWorld('nodeAPI', {
   joinPath: (...paths) => path.join(...paths),
-  basename: (filePath) => path.basename(filePath)
+  basename: (filePath) => path.basename(filePath),
+  dirname: (filePath) => path.dirname(filePath),
+  resolve: (filePath) => path.resolve(filePath)
 });
 
 // 暴露 tfjsAPI
